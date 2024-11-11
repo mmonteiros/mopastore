@@ -101,17 +101,25 @@ const Div = styled.div`
 `;
 
 const Products = ({ clothes, brands, categories }) => {
-  const [width, setWidth] = useState(window.innerWidth);
+  const [width, setWidth] = useState(null);
   const filteredBrands = useSelector((state) => state.filter.brands);
   const filteredCategories = useSelector((state) => state.filter.categories);
   const filteredSort = useSelector((state) => state.filter.sort);
 
-  let filteredClothes;
+  useEffect(() => {
+    // Ensure this code only runs on the client side
+    if (typeof window !== 'undefined') {
+      setWidth(window.innerWidth);
+      const handleWindowResize = () => setWidth(window.innerWidth);
+      window.addEventListener('resize', handleWindowResize);
+      return () => window.removeEventListener('resize', handleWindowResize);
+    }
+  }, []);
 
-  filteredClothes =
+  let filteredClothes =
     filteredBrands.length > 0
-      ? [...clothes].filter((value) => filteredBrands.includes(value.brand))
-      : [...clothes];
+      ? clothes.filter((value) => filteredBrands.includes(value.brand))
+      : clothes;
 
   filteredClothes =
     filteredCategories.length > 0
@@ -125,15 +133,6 @@ const Products = ({ clothes, brands, categories }) => {
   } else if (filteredSort === 'price_low_to_high') {
     filteredClothes = filteredClothes.sort((a, b) => +a.amount - +b.amount);
   }
-
-  useEffect(() => {
-    const handleWindowResize = () => setWidth(window.innerWidth);
-    window.addEventListener('resize', handleWindowResize);
-
-    return () => {
-      window.removeEventListener('resize', handleWindowResize);
-    };
-  }, []);
 
   return (
     <>
@@ -178,23 +177,17 @@ const Products = ({ clothes, brands, categories }) => {
   );
 };
 
-export const getStaticProps = (context) => {
-  const items = getItems();
+export const getStaticProps = async () => {
+  const items = await getItems();
 
-  const brands = items.reduce((previous, current) => {
-    if (!previous.includes(current.brand)) {
-      previous.push(current.brand);
-    }
-
-    return previous;
+  const brands = items.reduce((acc, item) => {
+    if (!acc.includes(item.brand)) acc.push(item.brand);
+    return acc;
   }, []);
 
-  const categories = items.reduce((previous, current) => {
-    if (!previous.includes(current.category)) {
-      previous.push(current.category);
-    }
-
-    return previous;
+  const categories = items.reduce((acc, item) => {
+    if (!acc.includes(item.category)) acc.push(item.category);
+    return acc;
   }, []);
 
   return {

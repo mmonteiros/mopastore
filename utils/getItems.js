@@ -1,17 +1,13 @@
-import data from '../pages/api/data.json';
+import { getCatalog } from '../pages/api/catalog/catalog';
 
-// Shuffle the items
 const shuffle = (array) => {
   let currentIndex = array.length,
     randomIndex;
 
-  // While there remain elements to shuffle...
-  while (currentIndex != 0) {
-    // Pick a remaining element...
+  while (currentIndex !== 0) {
     randomIndex = Math.floor(Math.random() * currentIndex);
     currentIndex--;
 
-    // And swap it with the current element.
     [array[currentIndex], array[randomIndex]] = [
       array[randomIndex],
       array[currentIndex],
@@ -21,8 +17,16 @@ const shuffle = (array) => {
   return array;
 };
 
-const getItems = () => {
-  return shuffle(data.clothes);
+const getItems = async () => {
+  try {
+    const response = await getCatalog();
+    const data = response.data;
+    console.log(data.clothes);
+    return shuffle(data.clothes);
+  } catch (error) {
+    console.error("Error fetching items:", error);
+    return [];
+  }
 };
 
 export default getItems;
