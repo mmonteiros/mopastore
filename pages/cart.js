@@ -215,7 +215,7 @@ const Cart = () => {
     } else {
       return Math.floor(priceValue / 5);
     }
-  }, [coupon]);
+  }, [coupon, couponFromAPI]);
 
   const totalValue = useMemo(() => {
     return priceValue - discountValue;
